@@ -4,7 +4,7 @@ local menu = {
 }
 
 function menu:draw()
-    love.graphics.print("This is the menu, press [SPACE] to play.")
+    love.graphics.print("This is the menu, press [SPACE] to play, [ESC] to quit.")
     love.graphics.print(self.message, 0, 20)
 end
 
@@ -15,6 +15,9 @@ end
 function menu:keypressed(key)
     if key == "space" then
         game:change_state ("play")
+    end
+    if key == "escape" then
+        love.event.quit(0)
     end
 
 end

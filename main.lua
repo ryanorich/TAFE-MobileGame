@@ -18,11 +18,6 @@ function game:link_event(event)
     end
 end
 
---Actualling call the linking function.
-game:link_event("draw")
-game:link_event("keypressed")
-game:link_event("update")
-
 --Callback for changing states
 
 function game:change_state(state)
@@ -38,3 +33,9 @@ function game:change_state(state)
         end
     end
 end
+
+--Calling the linking functions.
+game:link_event("draw")
+game:link_event("keypressed")
+game:link_event("mousepressed")
+game:link_event("update")
