@@ -1,6 +1,8 @@
 --Local parameters for play
-local play = {
-    player = {
+local play = 
+{
+    player = 
+    {
         x = 0,
         y = 0
     },
@@ -10,52 +12,72 @@ local play = {
     meteorCount=0,
     missiles={},
     guns={},
+    cities={},
     
     PLAYER_SPEED = 500,
 
-    BLAST_SIZE_MAX = 50,
-    BLAST_GROWSPEED = 50,
-    BLAST_SHRINKSPEED = 80,
+    BLAST_SIZE_MAX = 60,
+    BLAST_GROWSPEED = 75,
+    BLAST_SHRINKSPEED = 90,
 
     METEOR_SIZE = 5,
-    METEOR_FALLSPEED = 200,
+    METEOR_FALLSPEED = 50,
 
     GROUND_HEIGHT = 20,
     GUN_WIDTH = 50,
     GUN_HEIGHT =80,
+    GUN_X_OFFSET = 50,
+    GUN_CITY_SPACING = 0, --Need to calculate
+
+    CITY_SIZE = 50,
 
     MISSILE_SIZE = 4,
     MISSILE_SPEED = 500
-
-
 }
+
+--Startup
 
 function play:entered()
     window_width, window_height = love.graphics.getDimensions()
 
+    --Add Player
     self.player = {
         x = 0,
         y = 0
     }
 
-    local gun = 
-    {
-        x = 100
-    }
-    table.insert(self.guns,  1, gun)
+    --Add guns and cities
+    self.GUN_CITY_SPACING = (window_width - 2*self.GUN_X_OFFSET)/6.0
 
-    local gun = 
-    {
-        x = window_width/2,
-    }
-    table.insert(self.guns, 2, gun)
- 
-    local gun = 
-    {
-        x = window_width-100
-    }
-    table.insert(self.guns,  3, gun)
+    for pos=0,6 do
+        --Guns at position 0, 3, 6
+        if pos%3 == 0 then
+            local gun = 
+            {
+                x = self.GUN_X_OFFSET + pos * self.GUN_CITY_SPACING,
+                destroyed = false
+
+            }
+            table.insert(self.guns, 1 + pos / 3, gun)
+        else
+            --Must be a city othersise
+            if (pos<=3) then
+                citynumber = pos
+            else
+                citynumber = pos-1
+            end
+            local city = 
+            {
+                x = self.GUN_X_OFFSET + pos * self.GUN_CITY_SPACING,
+                destroyed = false
+            }
+            table.insert(self.cities, citynumber, city)
+        end
+    end
+
+    meteor_countdown = 0
 end
+
 
 --Note - User method calls for other states.
 function play:exited()
@@ -81,6 +103,11 @@ function play:draw()
         love.graphics.rectangle('fill', gun.x-self.GUN_WIDTH/2, window_height-self.GUN_HEIGHT+self.GUN_WIDTH*0.6, self.GUN_WIDTH, self.GUN_WIDTH)
     end
 
+    --Draw Cities
+    love.graphics.setColor(0.4,0.4,0.4,1.0)
+    for ci, city in pairs(self.cities) do
+        love.graphics.rectangle('fill', city.x-self.CITY_SIZE/2.0, window_height-self.CITY_SIZE, self.CITY_SIZE, self.CITY_SIZE)
+    end
 
     --Draw Missiles
     love.graphics.setColor(1,0,0,1)
@@ -91,8 +118,9 @@ function play:draw()
 
 
     --Draw Blasts
-    love.graphics.setColor(1,0.5,0,1)
+    
     for i, blast in ipairs(self.blasts) do 
+        love.graphics.setColor(love.math.random(0.7, 1.0),love.math.random(0,0.4),0,1)
         love.graphics.circle("fill", blast.x, blast.y, blast.size)
     end
 
@@ -107,7 +135,7 @@ end
 
 function play:mousepressed(x, y, button, istouch)
     if button == 1 then
-       play:addMissile(x,y)
+    play:addMissile(x,y)
     end
 end
 
@@ -208,15 +236,23 @@ function play:update(dt)
     end
 
     --Add Meteors
-    if self.meteorCount < 20 then
-        local meteor = 
-        {
-            x = love.math.random(self.METEOR_SIZE/2,window_width-self.METEOR_SIZE/2),
-            y = love.math.random(self.METEOR_SIZE/2,window_height-self.METEOR_SIZE/2)
-        }
-        table.insert(self.meteors, meteor)
-        self.meteorCount = self.meteorCount + 1
+    if meteor_countdown <= 0 then
+    
+        if self.meteorCount < 20 then
+            local meteor = 
+            {
+                x = love.math.random(self.METEOR_SIZE/2,window_width-self.METEOR_SIZE/2),
+                --y = love.math.random(self.METEOR_SIZE/2,window_height-self.METEOR_SIZE/2)
+                y=0
+            }
+            table.insert(self.meteors, meteor)
+            self.meteorCount = self.meteorCount + 1
+            meteor_countdown = math.random(0.5, 1.5)
+        end
+    else
+        meteor_countdown = meteor_countdown - dt
     end
+
 
     --Missiles
     for mi, missile in pairs(self.missiles) do
@@ -243,14 +279,9 @@ function play:update(dt)
                 table.remove(self.meteors,mi)
                 self.meteorCount = self.meteorCount - 1
             end
-
         end
-
     end
 
-    
-
-    
     --DropMeteors
 
     for mi, meteor in pairs(self.meteors) do
@@ -261,13 +292,10 @@ function play:update(dt)
         end
 
     end
-
-
-
 end
 
 
 return play
 
 --Local table for play
---when using as require, creates an encapuslted versio
+--when using as require, creates an encapuslted version
