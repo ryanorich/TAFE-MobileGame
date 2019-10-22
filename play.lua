@@ -1,3 +1,9 @@
+local Meteor = require( 'meteor')
+local Gun = require ('gun')
+local Missile = require ('missile')
+local City = require ('city')
+local Blast = require ('blast')
+
 --Local parameters for play
 local play = 
 {
@@ -7,13 +13,22 @@ local play =
         y = 0
     },
     
-    blasts={},
-    meteors={},
-    meteorCount=0,
-    missiles={},
-    guns={},
-    cities={},
+    --Local objects to to be changed.
+    blastsx={},
+    citiesx={},
+    meteorsx={},
+    gunsx={},
+    missilesx={},
     
+    --Object form Exgternal Classes
+    blasts={},
+    cities={},
+    guns={},
+    meteors={},
+    missiles={},
+
+    meteorCount=0,
+
     PLAYER_SPEED = 500,
 
     BLAST_SIZE_MAX = 60,
@@ -46,7 +61,7 @@ function play:entered()
         y = 0
     }
 
-    --Add guns and cities
+    --Add   gunsx and citiesx
     self.GUN_CITY_SPACING = (window_width - 2*self.GUN_X_OFFSET)/6.0
 
     for pos=0,6 do
@@ -58,7 +73,9 @@ function play:entered()
                 destroyed = false
 
             }
-            table.insert(self.guns, 1 + pos / 3, gun)
+            table.insert(self.gunsx, 1 + pos / 3, gun)
+
+            table.insert(self.guns, Gun.new(self.GUN_X_OFFSET + pos * self.GUN_CITY_SPACING, love.graphics.getHeight()-self.GUN_HEIGHT))
         else
             --Must be a city othersise
             if (pos<=3) then
@@ -71,7 +88,9 @@ function play:entered()
                 x = self.GUN_X_OFFSET + pos * self.GUN_CITY_SPACING,
                 destroyed = false
             }
-            table.insert(self.cities, citynumber, city)
+            table.insert(self.citiesx, citynumber, city)
+            
+            table.insert(self.cities, citynumber, City.new(self.GUN_X_OFFSET + pos * self.GUN_CITY_SPACING, love.graphics.getHeight()-self.GUN_HEIGHT))
         end
     end
 
@@ -97,21 +116,31 @@ function play:draw()
     love.graphics.setColor(1,1,1,1)
     love.graphics.print("This is the game, pres [ESC] to exit to menu.")
     love.graphics.rectangle("fill", self.player.x, self.player.y, 20, 20)
+
+     --Draw Guns
     love.graphics.setColor(0.5,0.5,0.5,1)
-    for gi, gun in pairs(self.guns) do
+    for gi, gun in pairs(self.gunsx) do
         love.graphics.circle('fill', gun.x, window_height-self.GUN_HEIGHT + self.GUN_WIDTH/2, self.GUN_WIDTH*0.4)
         love.graphics.rectangle('fill', gun.x-self.GUN_WIDTH/2, window_height-self.GUN_HEIGHT+self.GUN_WIDTH*0.6, self.GUN_WIDTH, self.GUN_WIDTH)
+    end
+    for i, gun in pairs(self.guns) do
+        gun:draw()
     end
 
     --Draw Cities
     love.graphics.setColor(0.4,0.4,0.4,1.0)
-    for ci, city in pairs(self.cities) do
+    for ci, city in pairs(self.citiesx) do
         love.graphics.rectangle('fill', city.x-self.CITY_SIZE/2.0, window_height-self.CITY_SIZE, self.CITY_SIZE, self.CITY_SIZE)
     end
 
+    for i, city in ipairs(self.cities) do
+        city:draw()
+    end
+
+
     --Draw Missiles
     love.graphics.setColor(1,0,0,1)
-    for mi, missile in pairs(self.missiles) do
+    for mi, missile in pairs(self.missilesx) do
         love.graphics.line(missile.startx, missile.starty, missile.x, missile.y)
         love.graphics.circle("fill", missile.x, missile.y, 3)
     end
@@ -119,23 +148,32 @@ function play:draw()
 
     --Draw Blasts
     
-    for i, blast in ipairs(self.blasts) do 
+    for i, blast in ipairs(self.blastsx) do 
         love.graphics.setColor(love.math.random(0.7, 1.0),love.math.random(0,0.4),0,1)
         love.graphics.circle("fill", blast.x, blast.y, blast.size)
+    end
+
+    for i, blast in ipairs(self.blasts) do
+        blast:draw()
     end
 
 
     --Draw Meteors
     love.graphics.setColor(0.5,0.5,0.3,1)
-    for i, meteor in ipairs(self.meteors) do 
+    for i, meteor in ipairs(self.meteorsx) do 
         love.graphics.circle("fill", meteor.x, meteor.y, self.METEOR_SIZE)
     end
+
+    for i, meteor in ipairs(self.meteors) do 
+        meteor:draw()
+    end
+
 
 end
 
 function play:mousepressed(x, y, button, istouch)
     if button == 1 then
-    play:addMissile(x,y)
+        play:addMissile(x,y)
     end
 end
 
@@ -154,7 +192,7 @@ function play:addMissile(ex, ey)
 
     --TODO - Gun Cooldown Checks
 
-    local sx = self.guns[gun].x
+    local sx = self.gunsx[gun].x
     local sy = window_height-self.GUN_HEIGHT
 
     --Only allow shooting slightlu up
@@ -176,7 +214,9 @@ function play:addMissile(ex, ey)
         y = sy
 
     }
-    table.insert(self.missiles, missile)
+    table.insert(self.missilesx, missile)
+
+    table.insert(self.missiles, Missile.new(self.guns[1], ex, ey))
 end
 
 
@@ -187,7 +227,10 @@ function play:addBlast(ex, ey)
         size=1,
         growing = true;
     }
-    table.insert(self.blasts, blast)
+    table.insert(self.blastsx, blast)
+
+    --Blast Object
+    table.insert(self.blasts, Blast.new(ex, ey) )
 end
 
 
@@ -220,7 +263,7 @@ function play:update(dt)
     end
 
     --Blasts
-    for i, blast in ipairs(self.blasts) do
+    for i, blast in ipairs(self.blastsx) do
         if blast.growing == true then
             blast.size = blast.size + dt * self.BLAST_GROWSPEED
             if blast.size > self.BLAST_SIZE_MAX then
@@ -230,22 +273,49 @@ function play:update(dt)
         else 
             blast.size = blast.size - dt*self.BLAST_SHRINKSPEED
             if blast.size < 0 then
-                table.remove(self.blasts, i)
+                table.remove(self.blastsx, i)
             end
+        end
+    end
+
+    for i, blast in ipairs(self.blasts) do
+        blast:update(dt)
+        if blast.alive ~= true then
+            table.remove(self.blasts
+    , i)
         end
     end
 
     --Add Meteors
     if meteor_countdown <= 0 then
     
-        if self.meteorCount < 20 then
+        if self.meteorCount < 200 then
             local meteor = 
             {
                 x = love.math.random(self.METEOR_SIZE/2,window_width-self.METEOR_SIZE/2),
                 --y = love.math.random(self.METEOR_SIZE/2,window_height-self.METEOR_SIZE/2)
                 y=0
             }
-            table.insert(self.meteors, meteor)
+            table.insert(self.meteorsx, meteor)
+
+            
+
+            --GER Random structure index, form 0 to 6
+            local pos = math.random(0, 6)
+            if pos%3 == 0 then
+                --Targeting a gun
+                pos = pos/3+1
+              
+                table.insert(self.meteors, Meteor.new(self.guns[pos]))
+            else
+                --Targeting a City
+                if pos > 3 then pos  = pos - 1 end
+               
+                table.insert(self.meteors, Meteor.new(self.cities[pos]))
+            end
+
+            --table.insert(self.meteors, Meteor.new(target))
+
             self.meteorCount = self.meteorCount + 1
             meteor_countdown = math.random(0.5, 1.5)
         end
@@ -255,43 +325,70 @@ function play:update(dt)
 
 
     --Missiles
-    for mi, missile in pairs(self.missiles) do
+    for mi, missile in pairs(self.missilesx) do
         missile.x = missile.x + missile.deltax * dt
         missile.y = missile.y + missile.deltay * dt
         --Move missile, and check for location.
 
-        --Check if missiles traveled enough
+        --Check if missilesx traveled enough
         if  missile.y-missile.starty < missile.targety-missile.starty then
             play:addBlast(missile.targetx, missile.targety)
-            table.remove(self.missiles, mi)
+            table.remove(self.missilesx, mi)
         end
 
+    end
+
+    for i, missile in ipairs(self.missiles) do
+        missile:update(dt)
+        if missile.alive == false then
+            table.insert(self.blasts, Blast.new(missile.targetx, missile.targety))
+            table.remove(self.missiles, i)
+        end
     end
 
 
     --Check for Blast Collisions
 
-    for bi, blast in pairs(self.blasts) do
+    for bi, blast in pairs(self.blastsx) do
         CheckDistance2 = math.pow((blast.size + self.METEOR_SIZE),2)
-        for mi, meteor in pairs(self.meteors) do
+        for mi, meteor in pairs(self.meteorsx) do
             distance2 = math.pow((meteor.x - blast.x), 2) + math.pow((meteor.y - blast.y), 2)
             if distance2 <= CheckDistance2 then
-                table.remove(self.meteors,mi)
+                table.remove(self.meteorsx,mi)
                 self.meteorCount = self.meteorCount - 1
             end
         end
     end
 
+    for bi, blast in ipairs(self.blasts) do
+        for mi, meteor in ipairs(self.meteors) do
+            if blast:hasDestroyed(meteor) then 
+                --Meteor descruction
+                table.remove(self.meteors, mi)
+            end
+            --TODO - other destroyables
+        end
+
+    end
+
     --DropMeteors
 
-    for mi, meteor in pairs(self.meteors) do
+    for mi, meteor in pairs(self.meteorsx) do
         meteor.y = meteor.y + self.METEOR_FALLSPEED * dt
 
         if meteor.y > window_height + self.METEOR_SIZE then
             meteor.y = -self.METEOR_SIZE
         end
-
     end
+
+    --Updating for Meteors
+    for i, meteor in pairs(self.meteors) do
+        meteor:update(dt)
+        if meteor.alive == false then
+            table.remove (self.meteors, i)
+        end
+    end
+
 end
 
 
