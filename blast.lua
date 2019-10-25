@@ -60,14 +60,14 @@ function blast.new(x, y)
             size = size - SHRINK_SPEED * dt
             if size <= 0 then
                 size = 0
-                alive = false
+                self.alive = false
             end
         end
     end
 
     function self:draw()
         love.graphics.setColor(0,love.math.random(0.7, 1.0),love.math.random(0,0.4),1)
-        love.graphics.circle("fill", self.x, self.y, size)
+        love.graphics.circle("fill", self.x, self.y, size/2)
     end
 
 

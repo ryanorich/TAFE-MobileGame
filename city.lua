@@ -1,23 +1,34 @@
 local city = {}
 
 
+local WIDTH = 50
+local GROUND = 20
 
 
-function city.new(x, y)
+function city.new(x)
     local self = {}
 
-    self.x = x
-    self.y = y
+    local width = WIDTH
+    local ground = GROUND
     
-    local width = 80
-    local ground = 50
+
+    self.x = x
+    self.y = love.graphics.getHeight() - ground
+    
+    
 
     self.alive = true
 
     function self:draw()
-        love.graphics.setColor(1.0,0.5,0.5,1)
-        
-        love.graphics.rectangle('fill', self.x-width/2, self.y+width*0.6, width, width)
+        love.graphics.setColor(0.4,0.4,0.4,1)
+        if self.alive == true then
+            --Normal Cities
+            love.graphics.rectangle('fill', self.x-width/2, self.y - width/2, width, width)
+        else
+            --Destroyed Cities
+            love.graphics.rectangle('line', self.x-width/2, self.y - width/2, width, width)
+    
+        end
     end
 
     return self
