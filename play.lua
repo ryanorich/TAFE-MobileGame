@@ -27,7 +27,6 @@ local play =
     meteors={},
     missiles={},
 
-    meteorCount=0,
 
     time = 0,
 
@@ -55,6 +54,10 @@ local play =
 --Startup
 function play:entered()
     window_width, window_height = love.graphics.getDimensions()
+
+    --Load Shader
+    skyshader = love.graphics.newShader("skyshader.fs")
+    skyshader:send("height", love.graphics.getHeight())
 
     --Add Player
     self.player = {
@@ -94,6 +97,12 @@ function play:draw()
 
     window_width, window_height = love.graphics.getDimensions()
     
+    --Draw Shader Background
+    love.graphics.setShader(skyshader)
+    love.graphics.rectangle('fill', 0,0,love.graphics.getWidth(), love.graphics.getHeight())
+
+    love.graphics.setShader()
+
     --Draw Background
     love.graphics.setColor(0.2,1,0,1)
     love.graphics.rectangle('fill',0,window_height-self.GROUND_HEIGHT, window_width, self.GROUND_HEIGHT)
@@ -180,6 +189,9 @@ function play:update(dt)
     --update time
     self.time = self.time + dt
 
+    --send time to shader
+    skyshader:send("time", self.time)
+
     window_width, window_height = love.graphics.getDimensions()
 
     --Player Movement
@@ -208,7 +220,7 @@ function play:update(dt)
     --Add Meteors
     if meteor_countdown <= 0 then
     
-        if self.meteorCount < 200 then
+        if #self.meteors < 20 then
   
 
             --GER Random structure index, form 0 to 6
@@ -227,7 +239,7 @@ function play:update(dt)
 
             --table.insert(self.meteors, Meteor.new(target))
 
-            self.meteorCount = self.meteorCount + 1
+       
             meteor_countdown = math.random(0.2, 1.0)
         end
     else
@@ -276,11 +288,11 @@ function getGunOrder (x)
     local half = love.graphics.getWidth()/2
     local third = half*2/3
 
-    if  math.floor(x/3) == 1 then
+    if  x > third and x < third*2 then
         --Middle Gun is shot first
         table.insert(gunOrder,2)
 
-        --Add in outer guns
+        --Add for in outer guns
         if x/half < 1 then
             --Left hand gun first
             table.insert(gunOrder, 1)
@@ -291,15 +303,15 @@ function getGunOrder (x)
             table.insert(gunOrder, 1)
         end
     else
-        --Starting form eight left of right hand side
+        --outer gun shoots first, either left of right hand side
         if x/half < 1 then
-            --Startign form Left Hand Side
+            --Starting form left hand side
             table.insert(gunOrder, 1)
             table.insert(gunOrder, 2)
             table.insert(gunOrder, 3)
 
         else
-            --Starting form Right Hand side
+            --Starting form right hand side
 
             table.insert(gunOrder, 3)
             table.insert(gunOrder, 2)
