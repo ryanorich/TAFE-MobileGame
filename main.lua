@@ -2,13 +2,22 @@
 game = {
 current_state = "menu",
     states = {
-        menu = require("menu"),
-        play = require("play")
+        menu =          require("menu"),
+        play =          require("play"),
+        scoreboard =    require("scoreboard"),
+        settings =      require("settings")
+    },
+
+    functions = {
+        "draw",
+        "keypressed",
+        "mousepressed",
+        "update"
     }
 }
 
 --This generates the boilerplate code require for states stored in game.
-function game:link_event(event)
+function game:linkEvent(event)
     love[event] = function(...)
         if      self.states[self.current_state] ~= nil then
             if    self.states[self.current_state][event] ~= nil then
@@ -20,7 +29,7 @@ end
 
 --Callback for changing states
 
-function game:change_state(state)
+function game:changeState(state)
     if      self.states[state] ~= nil then
         if  self.states[self.current_state].exited ~= nil then
             self.states[self.current_state].exited(self.states[self.current_state])
@@ -34,8 +43,11 @@ function game:change_state(state)
     end
 end
 
---Calling the linking functions.
-game:link_event("draw")
-game:link_event("keypressed")
-game:link_event("mousepressed")
-game:link_event("update")
+
+--Creating linking functions
+for i, fun in ipairs(game.functions) do
+    game:linkEvent(fun)
+end
+
+
+

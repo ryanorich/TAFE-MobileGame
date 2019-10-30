@@ -13,13 +13,6 @@ local play =
         y = 0
     },
     
-    --Local objects to to be changed.
-   -- blastsx={},
-   --s citiesx={},
-
-   -- gunsx={},
-   -- missilesx={},
-    
     --Object form Exgternal Classes
     blasts={},
     cities={},
@@ -27,35 +20,27 @@ local play =
     meteors={},
     missiles={},
 
-
     time = 0,
 
     PLAYER_SPEED = 500,
-
-    BLAST_SIZE_MAX = 60,
-    BLAST_GROWSPEED = 75,
-    BLAST_SHRINKSPEED = 90,
-
-    METEOR_SIZE = 5,
-    METEOR_FALLSPEED = 50,
-
     GROUND_HEIGHT = 20,
-    GUN_WIDTH = 50,
-    GUN_HEIGHT =80,
     GUN_X_OFFSET = 50,
     GUN_CITY_SPACING = 0, --Need to calculate
-
     CITY_SIZE = 50,
-
-    MISSILE_SIZE = 4,
-    MISSILE_SPEED = 500
 }
 
 --Startup
 function play:entered()
-    window_width, window_height = love.graphics.getDimensions()
+    --Reset all objects
+    self.blasts={}
+    self.cities={}
+    self.guns={}
+    self.meteors={}
+    self.missiles={}
 
-    --Load Shader
+    self.time = 0
+    
+     --Load Shader
     skyshader = love.graphics.newShader("skyshader.fs")
     skyshader:send("height", love.graphics.getHeight())
 
@@ -66,7 +51,7 @@ function play:entered()
     }
 
     --Add   guns and cities
-    self.GUN_CITY_SPACING = (window_width - 2*self.GUN_X_OFFSET)/6.0
+    self.GUN_CITY_SPACING = (love.graphics.getWidth() - 2*self.GUN_X_OFFSET)/6.0
 
     for pos=0,6 do
         --Guns at position 0, 3, 6
@@ -95,8 +80,7 @@ end
 
 function play:draw()
 
-    window_width, window_height = love.graphics.getDimensions()
-    
+   
     --Draw Shader Background
     love.graphics.setShader(skyshader)
     love.graphics.rectangle('fill', 0,0,love.graphics.getWidth(), love.graphics.getHeight())
@@ -105,7 +89,23 @@ function play:draw()
 
     --Draw Background
     love.graphics.setColor(0.2,1,0,1)
-    love.graphics.rectangle('fill',0,window_height-self.GROUND_HEIGHT, window_width, self.GROUND_HEIGHT)
+    love.graphics.rectangle('fill',0,love.graphics.getHeight()-self.GROUND_HEIGHT, love.graphics.getWidth(), self.GROUND_HEIGHT)
+
+    local NoGuns = 0
+    for i, gun in ipairs(self.guns) do
+        if gun.alive == true then 
+            NoGuns = NoGuns + 1
+            
+        end
+    end
+
+    local NoCities = 0
+    for i, city in ipairs(self.cities) do
+        if city.alive == true then
+            NoCities = NoCities + 1
+           
+        end
+    end
 
     --Draw Reticle
     love.graphics.setColor(1,1,1,1)
@@ -114,8 +114,9 @@ function play:draw()
     love.graphics.print("Meteors : ".. #self.meteors, 0, 40)
     love.graphics.print("Missiles : ".. #self.missiles, 0, 60)
     love.graphics.print("Blasts : ".. #self.blasts, 0, 80)
-    love.graphics.print("Guns : ".. #self.guns, 0, 100)
-    love.graphics.print("Cities : ".. #self.cities, 0, 120)
+    love.graphics.print("Guns : ".. NoGuns, 0, 100)
+    love.graphics.print("Cities : ".. NoCities, 0, 120)
+    love.graphics.print("FP : ".. love.timer.getFPS(), 0, 140)
     love.graphics.rectangle("fill", self.player.x, self.player.y, 20, 20)
 
      --Draw Guns
@@ -170,14 +171,13 @@ function play:addMissile(ex, ey)
     end
 end
 
-function play:addBlast(ex, ey)
-    --Blast Object
-    table.insert(self.blasts, Blast.new(ex, ey) )
-end
-
 function play:keypressed(key)
     if key == "escape" then
-        game:change_state ( "menu" )
+        game:changeState ( "menu" )
+    end
+    if key == "." then
+        game.states.scoreboard:addPlayerScore(self.time)
+        game:changeState ( "scoreboard" )
     end
     if key == "space" then
         play:addMissile(self.player.x, self.player.y)
@@ -186,12 +186,32 @@ end
 
 function play:update(dt)
 
+
+    --Check if all guns and cities are destroyed
+    local alive = false
+    for i, gun in ipairs(self.guns) do
+        if gun.alive == true then 
+            alive = true
+            break
+        end
+    end
+
+    for i, city in ipairs(self.cities) do
+        if city.alive == true then
+            alive = true
+            break
+        end
+    end
+
+    if alive == false then
+        game:changeState ( "menu" )
+    end
+
     --update time
     self.time = self.time + dt
 
     --send time to shader
     skyshader:send("time", self.time)
-
     window_width, window_height = love.graphics.getDimensions()
 
     --Player Movement
@@ -209,7 +229,6 @@ function play:update(dt)
     end
 
     --Blasts
-
     for i, blast in ipairs(self.blasts) do
         blast:update(dt)
         if blast.alive == false then
@@ -221,25 +240,19 @@ function play:update(dt)
     if meteor_countdown <= 0 then
     
         if #self.meteors < 20 then
-  
-
             --GER Random structure index, form 0 to 6
             local pos = math.random(0, 6)
             if pos%3 == 0 then
                 --Targeting a gun
                 pos = pos/3+1
-              
                 table.insert(self.meteors, Meteor.new(self.guns[pos]))
             else
                 --Targeting a City
                 if pos > 3 then pos  = pos - 1 end
-               
                 table.insert(self.meteors, Meteor.new(self.cities[pos]))
             end
 
             --table.insert(self.meteors, Meteor.new(target))
-
-       
             meteor_countdown = math.random(0.2, 1.0)
         end
     else
@@ -278,7 +291,6 @@ function play:update(dt)
     for i, gun in ipairs(self.guns) do
         gun:update(dt)
     end
-
 end
 
 --Gest the order of the guns to check for when firing, based on distance
@@ -309,18 +321,14 @@ function getGunOrder (x)
             table.insert(gunOrder, 1)
             table.insert(gunOrder, 2)
             table.insert(gunOrder, 3)
-
         else
             --Starting form right hand side
-
             table.insert(gunOrder, 3)
             table.insert(gunOrder, 2)
             table.insert(gunOrder, 1)
-
         end
     end
            
-
     return gunOrder
 end
 
