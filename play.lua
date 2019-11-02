@@ -29,6 +29,15 @@ local play =
     CITY_SIZE = 50,
 }
 
+--Returns the current time value.
+function play:getTime()
+    return self.time
+end
+
+function play:getTimeScore()
+    return tonumber(string.format("%.3f", self.time))
+end
+
 --Startup
 function play:entered()
     --Reset all objects
@@ -177,7 +186,7 @@ function play:keypressed(key)
     end
     if key == "." then
         game.states.scoreboard:addPlayerScore(self.time)
-        game:changeState ( "scoreboard" )
+        game:changeState ( "gameOver" )
     end
     if key == "space" then
         play:addMissile(self.player.x, self.player.y)
@@ -204,7 +213,7 @@ function play:update(dt)
     end
 
     if alive == false then
-        game:changeState ( "menu" )
+        game:changeState ( "gameOver" )
     end
 
     --update time

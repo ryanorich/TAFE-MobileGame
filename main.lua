@@ -5,7 +5,10 @@ current_state = "menu",
         menu =          require("menu"),
         play =          require("play"),
         scoreboard =    require("scoreboard"),
-        settings =      require("settings")
+        settings =      require("settings"),
+        enterName =     require("enterName"),
+        gameOver =      require("gameOver"),
+        credits =       require("credits")
     },
 
     functions = {
