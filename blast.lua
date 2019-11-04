@@ -1,11 +1,12 @@
-local blast = {}
+local blast = {
 
-BASE_SIZE = 100
-BLAST_TIME = 0.5
+BASE_SIZE = 100,
+BLAST_TIME = 0.5,
 SHRINK_TIME = 0.3
+}
 
 function blast.sizeIncrease(increase)
-    BASE_SIZE = BASE_SIZE * increase
+    blast.BASE_SIZE = blast.BASE_SIZE * increase
 end
 
 function blast.new(x, y)
@@ -17,9 +18,9 @@ function blast.new(x, y)
     local growing = true
     self.alive = true
 
-    local MAX_SIZE = BASE_SIZE
-    local GROW_SPEED = MAX_SIZE/BLAST_TIME
-    local SHRINK_SPEED = MAX_SIZE/SHRINK_TIME
+    local MAX_SIZE = blast.BASE_SIZE
+    local GROW_SPEED = MAX_SIZE/blast.BLAST_TIME
+    local SHRINK_SPEED = MAX_SIZE/blast.SHRINK_TIME
     
     
     function self:hasDestroyed(target)

@@ -52,5 +52,8 @@ for i, fun in ipairs(game.functions) do
     game:linkEvent(fun)
 end
 
+--Make sure that the Entered state of the menu is entered.
+game:changeState("menu")
+
 
 

@@ -178,6 +178,10 @@ function play:addMissile(ex, ey)
             end
         end  
     end
+
+   -- Blast.BASE_SIZE = Blast.BASE_SIZE * 1.5
+    --Blast.sizeIncrease(1.2)
+
 end
 
 function play:keypressed(key)

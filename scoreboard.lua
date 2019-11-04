@@ -114,6 +114,7 @@ end
 --Load scores
 function scoreboard:entered()
     self:loadScores()
+    print("Scoreboard Entered")
 end
 
 function scoreboard:draw()
