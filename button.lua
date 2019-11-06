@@ -46,6 +46,7 @@ function button.new(text, fn, x, y, width, height)
         else
             return false
         end
+        print( self.text)
     end
 
     
@@ -61,10 +62,14 @@ function button.new(text, fn, x, y, width, height)
         love.graphics.setColor(colorText)
 
         love.graphics.print(self.text, self.font, tx, ty)
+        
 
     end
     
-
+    function self:changeText(newText)
+        self.text = newText
+        print("Changing Text ".. self.text)
+    end
     
     return self
 end

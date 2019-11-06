@@ -36,11 +36,11 @@ function menu:entered()
     local bx = (ww - buttonWidth) * 0.5
     local by = (wh - totalButtonHeight) * 0.5
 
-    Button.setColors( {073, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0.7,0,0,1.0} )
+    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
 
     --Button #1 - Play
     table.insert(self.buttons, Button.new(
-                    "1. Play",
+                    "Play",
                     function () game:changeState("play") end,
                     bx, by, buttonWidth, buttonHeight
                 ))
@@ -48,7 +48,7 @@ function menu:entered()
     --Button #1 - Settings
     by = by + buttonHeight + buttonSpacing
     table.insert(self.buttons, Button.new(
-                    "2. Settings",
+                    "Settings",
                     function () game:changeState("settings") end,
                     bx, by, buttonWidth, buttonHeight
                 ))
@@ -56,7 +56,7 @@ function menu:entered()
     --Button #1 - Scoreboard
     by = by + buttonHeight + buttonSpacing
     table.insert(self.buttons, Button.new(
-                    "3. Scoreboard",
+                    "Scoreboard",
                     function () game:changeState("scoreboard") end,
                     bx, by, buttonWidth, buttonHeight
                 ))
@@ -64,7 +64,7 @@ function menu:entered()
     --Button #1 - Credits
     by = by + buttonHeight + buttonSpacing
     table.insert(self.buttons, Button.new(
-                    "4. Credits",
+                    "Credits",
                     function () game:changeState("credits") end,
                     bx, by, buttonWidth, buttonHeight
                 ))
@@ -72,10 +72,11 @@ function menu:entered()
     --Exit Button
     Button.setColors({0.2,0,0,1},{0.9,0.3,0.21},{1.0,0.1,0.0,1})
  
+    local by = wh - buttonHeight * 1.5
     table.insert(self.buttons, Button.new(
                     "Exit",
                     menu.exitGame,--menu:exitGame(),
-                    ww*0.8, wh*0.8, ww*0.15, buttonHeight 
+                    ww*0.8, by, ww*0.15, buttonHeight 
     ))
 end
 
@@ -102,11 +103,7 @@ function menu:draw()
     love.graphics.print("This is the menu, press [SPACE] to play, [ESC] to quit. "..os.date())
     love.graphics.print(self.message, 0, 20)
 
-    love.graphics.print("Press 1. to Play", 0, 40)
-    love.graphics.print("Press 2. for Settings", 0, 60)
-    love.graphics.print("Press 3. for Scoreboards", 0, 80)
-    love.graphics.print("Press 4. for Credits", 0, 100)
-    love.graphics.print(ww.."x"..wh, 0, 120)
+    love.graphics.print(ww.."x"..wh, 0, 40)
 
     for i, button in ipairs(self.buttons) do
         button:draw()
@@ -119,30 +116,15 @@ function menu:set_message(message)
 end
 
 function menu:keypressed(key)
-    if key == "space" then
-        game:changeState ("play")
-    end
+
     if key == "escape" then
         menu.exitGame()
     end
-    if key == "1" then
-        game:changeState("play")
-    end
-    if key == "2" then
-        game:changeState("settings")
-    end
-    if key == "3" then
-        game:changeState("scoreboard")
-    end
 
-    if key == "4" then
-        game:changeState("credits")
-    end
 
 end
 
 function menu:exitGame()
-    print("exitGame() called")
     love.event.quit()
 end
 

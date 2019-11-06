@@ -1,9 +1,14 @@
+local Button = require("button")
+
+
 local scoreboard = {
 
 ScoreboardFileName = "scores.txt",
-scoreLimit = 5,
+scoreLimit = 10,
 scores = {},
 theScores = {},
+BGColor = {0,0.2,0,1.0},
+buttons = {}
 }
 
 --Deletes all current scores
@@ -21,6 +26,7 @@ function scoreboard:loadScores()
  
             local scoreValue = tonumber(string.match(scoreLine, "^%d+%.%d+"))
             local scoreName = string.match(scoreLine, "%s(.+)$")
+            if scoreName == nil then scoreName = " " end
             table.insert(self.theScores, {score=scoreValue, name=scoreName} )
             --self.loadAScore(score)
         end
@@ -52,6 +58,7 @@ function scoreboard:addScore(newScore, newName)
     scoreboardFile:open("w")
 
     for i, score in ipairs(scores) do
+        if score.name == nil then score.name = " " end
         scoreboardFile:write(score.score.." "..score.name.."\n")
     end
 
@@ -113,24 +120,88 @@ end
 
 --Load scores
 function scoreboard:entered()
+    self.buttons = {}
+
+
+    local ww = love.graphics.getWidth()
+    local wh = love.graphics.getHeight()
+
+    local buttonWidth = ww * 0.4
+    local buttonHeight = wh * 0.1
+
+    local bx = (ww - buttonWidth) * 0.5
+    local by = wh - buttonHeight * 1.5
+
+    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
+
+    --Button #1 - BACK TO Menu
+    table.insert(self.buttons, Button.new(
+        "1. Menu",
+        function () game:changeState("menu") end,
+        bx, by, buttonWidth, buttonHeight
+    ))
+
+
+  
     self:loadScores()
     print("Scoreboard Entered")
+
+
+end
+
+function scoreboard:update(dt)
+    mx, my = love.mouse.getPosition()
+    for i, button in ipairs(self.buttons) do
+        if button:isInside(mx, my) then
+            button.isHot = true
+        else
+            button.isHot = false
+        end
+    end
+end
+
+function scoreboard:mousepressed(mx, my, button, istouch)
+
+    for i, button in ipairs(self.buttons) do
+        if button:isInside(mx, my) then
+            button:fn()
+            break
+        end
+    end
 end
 
 function scoreboard:draw()
-    
+    love.graphics.setColor(unpack(self.BGColor))
+    love.graphics.rectangle('fill',
+            0,0,love.graphics.getWidth(), love.graphics.getHeight())
+
     love.graphics.setColor(1,1,1,1)
     love.graphics.print("This is the scoreboard menu. There are "..#self.theScores.." scores recored:")
 
     for i, score in ipairs(self.theScores) do
         love.graphics.print(i..". \t"..score.score.." - "..score.name, 0, 20*i+20)
     end
+
+    for i, button in ipairs(self.buttons) do
+        button:draw()
+    end
 end
 
 
 function scoreboard:keypressed(key)
-    if key == "space" or key == "escape" then
+    if  key == "escape" then
         game:changeState("menu")
+    end
+end
+
+function scoreboard:update(dt)
+    mx, my = love.mouse.getPosition()
+    for i, button in ipairs(self.buttons) do
+        if button:isInside(mx, my) then
+            button.isHot = true
+        else
+            button.isHot = false
+        end
     end
 end
 

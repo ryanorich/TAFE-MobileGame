@@ -3,22 +3,19 @@ local Gun = require ('gun')
 local Missile = require ('missile')
 local City = require ('city')
 local Blast = require ('blast')
+local Button = require ('button')
+local Saucer = require ('saucer')
 
 --Local parameters for play
 local play = 
 {
-    player = 
-    {
-        x = 0,
-        y = 0
-    },
-    
     --Object form Exgternal Classes
-    blasts={},
-    cities={},
-    guns={},
-    meteors={},
-    missiles={},
+    blasts = {},
+    cities = {},
+    guns = {},
+    meteors = {},
+    missiles = {},
+    saucers = {},
 
     time = 0,
 
@@ -27,6 +24,10 @@ local play =
     GUN_X_OFFSET = 50,
     GUN_CITY_SPACING = 0, --Need to calculate
     CITY_SIZE = 50,
+
+    paused = false,
+
+    pauseButtons = {}
 }
 
 --Returns the current time value.
@@ -40,12 +41,50 @@ end
 
 --Startup
 function play:entered()
+    self.paused = false
+    self.pauseButtons = {}
+
+    local ww, wh = love.graphics.getDimensions()
+
+    local noOfButtons = 2
+
+    local buttonWidth = ww * 0.4
+    local buttonHeight = wh * 0.1
+    local buttonSpacing = buttonHeight * 0.4
+    local totalButtonHeight = noOfButtons * (buttonHeight + buttonSpacing) - buttonSpacing
+
+    local bx = (ww - buttonWidth) * 0.5
+    local by = (wh - totalButtonHeight) * 0.5
+
+    --Button 1 - Continue
+    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
+     
+     table.insert(self.pauseButtons, Button.new(
+        "Continue",
+        function () self.paused = false end,
+        bx, by, buttonWidth, buttonHeight
+    ))
+
+     --Button 1 - Menu
+
+     by = by + buttonHeight + buttonSpacing
+   
+     
+     table.insert(self.pauseButtons, Button.new(
+        "Menu",
+        function () game:changeState("menu") end,
+        bx, by, buttonWidth, buttonHeight
+    ))
+
     --Reset all objects
-    self.blasts={}
-    self.cities={}
-    self.guns={}
-    self.meteors={}
-    self.missiles={}
+    self.blasts = {}
+    self.cities = {}
+    self.guns = {}
+    self.meteors = {}
+    self.missiles = {}
+    self.saucers = {}
+
+    table.insert(self.saucers, Saucer.new())
 
     self.time = 0
     
@@ -53,11 +92,7 @@ function play:entered()
     skyshader = love.graphics.newShader("skyshader.fs")
     skyshader:send("height", love.graphics.getHeight())
 
-    --Add Player
-    self.player = {
-        x = 0,
-        y = 0
-    }
+    blurshader = love.graphics.newShader("blurshader.fs")
 
     --Add   guns and cities
     self.GUN_CITY_SPACING = (love.graphics.getWidth() - 2*self.GUN_X_OFFSET)/6.0
@@ -84,17 +119,23 @@ end
 
 --Note - User method calls for other states.
 function play:exited()
-    game.states.menu:set_message("The player was at " .. self.player.x .. ", " .. self.player.y)
+    
 end
 
 function play:draw()
-
+    ww, wh = love.graphics.getDimensions()
    
     --Draw Shader Background
     love.graphics.setShader(skyshader)
     love.graphics.rectangle('fill', 0,0,love.graphics.getWidth(), love.graphics.getHeight())
 
     love.graphics.setShader()
+    -- if self.paused == true then
+    --     love.graphics.setShader(blurshader)
+    -- else
+    --     love.graphics.setShader()
+    -- end
+
 
     --Draw Background
     love.graphics.setColor(0.2,1,0,1)
@@ -126,7 +167,7 @@ function play:draw()
     love.graphics.print("Guns : ".. NoGuns, 0, 100)
     love.graphics.print("Cities : ".. NoCities, 0, 120)
     love.graphics.print("FP : ".. love.timer.getFPS(), 0, 140)
-    love.graphics.rectangle("fill", self.player.x, self.player.y, 20, 20)
+    
 
      --Draw Guns
 
@@ -157,11 +198,41 @@ function play:draw()
     for i, meteor in ipairs(self.meteors) do 
         meteor:draw()
     end
+
+    --Draw Saucers
+
+    for i, saucer in ipairs(self.saucers) do
+        saucer:draw()
+    end
+
+
+    --love.graphics.setShader()
+    --Draw Pause Menu
+    if self.paused == true then
+        
+        love.graphics.setColor(0,0.5,0.0, 0.5)
+        love.graphics.rectangle("fill", 0, 0, ww, wh)
+        
+        for i, button in ipairs(self.pauseButtons) do
+            button:draw()
+        end 
+    end
 end
 
 function play:mousepressed(x, y, button, istouch)
-    if button == 1 then
-        play:addMissile(x,y)
+    if self.paused == true then
+        for i, button in ipairs(self.pauseButtons) do
+            if button:isInside(mx, my) then
+                button.fn(self)
+                break
+            end
+        end
+    else
+
+        if button == 1 then
+            play:addMissile(x,y)
+        end
+
     end
 end
 
@@ -186,19 +257,33 @@ end
 
 function play:keypressed(key)
     if key == "escape" then
-        game:changeState ( "menu" )
+        self.paused = not self.paused
+        --game:changeState ( "menu" )
     end
     if key == "." then
         game.states.scoreboard:addPlayerScore(self.time)
         game:changeState ( "gameOver" )
     end
-    if key == "space" then
-        play:addMissile(self.player.x, self.player.y)
-    end
+    
 end
 
 function play:update(dt)
 
+    --Dont update if pausede
+    if self.paused == true then 
+        
+        mx, my = love.mouse.getPosition()
+        for i, button in ipairs(self.pauseButtons) do
+            if button:isInside(mx, my) then
+                button.isHot = true
+            else
+                button.isHot = false
+            end
+        end
+        
+        return 
+    
+    end
 
     --Check if all guns and cities are destroyed
     local alive = false
@@ -219,27 +304,16 @@ function play:update(dt)
     if alive == false then
         game:changeState ( "gameOver" )
     end
-
-    --update time
-    self.time = self.time + dt
-
-    --send time to shader
-    skyshader:send("time", self.time)
+        --update time
+        self.time = self.time + dt
+    
+        --send time to shader
+        skyshader:send("time", self.time)
+    
     window_width, window_height = love.graphics.getDimensions()
 
-    --Player Movement
-    if love.keyboard.isDown("w") then
-        self.player.y = self.player.y - self.PLAYER_SPEED * dt
-    end
-    if love.keyboard.isDown("s") then
-        self.player.y = self.player.y + self.PLAYER_SPEED * dt
-    end
-    if love.keyboard.isDown("a") then
-        self.player.x = self.player.x - self.PLAYER_SPEED * dt
-    end
-    if love.keyboard.isDown("d") then
-        self.player.x = self.player.x + self.PLAYER_SPEED * dt
-    end
+
+ 
 
     --Blasts
     for i, blast in ipairs(self.blasts) do
@@ -252,8 +326,8 @@ function play:update(dt)
     --Add Meteors
     if meteor_countdown <= 0 then
     
-        if #self.meteors < 20 then
-            --GER Random structure index, form 0 to 6
+        if #self.meteors < 50 then
+            --Get Random structure index, form 0 to 6
             local pos = math.random(0, 6)
             if pos%3 == 0 then
                 --Targeting a gun
@@ -266,7 +340,9 @@ function play:update(dt)
             end
 
             --table.insert(self.meteors, Meteor.new(target))
-            meteor_countdown = math.random(0.2, 1.0)
+            local meteorTime = math.random(0.2, 1.0)
+            local timeDifficulty = 1 / (self.time/15 + 1)
+            meteor_countdown = meteorTime * timeDifficulty
         end
     else
         meteor_countdown = meteor_countdown - dt

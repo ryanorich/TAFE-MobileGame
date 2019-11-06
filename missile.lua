@@ -1,5 +1,5 @@
 local missile  = {}
-local BASE_SPEED = 500
+local BASE_SPEED = 300
 
 function missile.new(source, tx, ty)
     local self = {}

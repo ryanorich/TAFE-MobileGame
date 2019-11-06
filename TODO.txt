@@ -3,28 +3,23 @@ Updated: 03/11/2019
 
 Required:
 ---------
-Main Menu GUI
-Settings Menu GUI
-Scoreboard GUI
-Enter Name GUI
-Game Over GUI
 Game Sounds
-Difficulty Changes
 Game sprites
+Tweaking game values
 
 Wanted:
 -------
-Game Difficulty
-Sound Options - Music and Sounds
+Volume options for Muic and Sound
 Menu GUI Graphics
 Menu GUI Sounds
 Menu Music
 Saucer Enemies
 Power-Ups - missile speed, gun cool-down
-Enter Name - Touch Only
+Rounded corner option for buttons
 
 Possible:
 ---------
+Game Difficulty settings and score multiplier
 Screen Resolution Change
 Different meteor types - Fragmenting, corkscrew, arching etc.
 different power-Ups - Repair city /gun, shield, slow-motion, balst-wave etc.

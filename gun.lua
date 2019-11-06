@@ -3,7 +3,7 @@ local gun = {}
 local GROUND = 50
 local WIDTH = 50
 local GUN_HEIGHT = 80
-local GUN_COOLDOWN  = 1.0
+local GUN_COOLDOWN  = 1.2
 
 local CD_WIDTH = 40
 local CD_HEIGHT = 10
