@@ -3,7 +3,8 @@ local button = {
  COLOR = {073, 0.4, 0.3, 1.0},
  COLOR_HOT = {0.7, 0.9, 0.5, 1.0},
  COLOR_TEXT = {0.7,0,0,1.0} ,
- FONT = nil
+ FONT = nil,
+ 
 }
 
 button.FONT = love.graphics.newFont(love.graphics.getHeight()*0.05)
@@ -16,7 +17,12 @@ function button.setColors(color, colorHot, colorText)
 end
 
 function button.new(text, fn, x, y, width, height)
-    local self = {}
+    local self = {
+        sound = {
+            press = love.audio.newSource("sfx/blip.wav", "static"),
+            hot = love.audio.newSource("sfx/hot.wav", "static"),
+               },
+    }
     self.text = text
     self.fn = fn   
     self.x = x
@@ -70,7 +76,31 @@ function button.new(text, fn, x, y, width, height)
         self.text = newText
         print("Changing Text ".. self.text)
     end
+
+    function self:playPressed()
+        self.sound.press:play()
+    end
     
+    function self:playHot()
+        self.sound.hot:play()
+    end
+
+    function self:setSound(sound)
+        if sound == "blip" then
+            self.sound.press = love.audio.newSource("sfx/blip.wav", "static")
+        elseif sound == "blipup" then
+            print("Setting Sound")
+            self.sound.press = love.audio.newSource("sfx/blipup.wav", "static")
+        elseif sound == "blipdown" then
+            self.sound.press = love.audio.newSource("sfx/blipdown.wav", "static")
+        elseif sound == "klack" then
+            self.sound.press = love.audio.newSource("sfx/blip.wav", "static")
+        else
+            self.sound.press = love.audio.newSource("sfx/blip.wav", "static")
+        end
+
+    end
+
     return self
 end
 

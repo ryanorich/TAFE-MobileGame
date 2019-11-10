@@ -27,7 +27,11 @@ local play =
 
     paused = false,
 
-    pauseButtons = {}
+    pauseButtons = {},
+
+    sound = {
+        --missile = love.audio.newSource("sfx/missile.wav", "static")
+    },
 }
 
 --Returns the current time value.
@@ -43,6 +47,9 @@ end
 function play:entered()
     self.paused = false
     self.pauseButtons = {}
+
+    --Stop the music from playing
+    game.states.menu.BGMusic:stop()
 
     local ww, wh = love.graphics.getDimensions()
 
@@ -84,7 +91,6 @@ function play:entered()
     self.missiles = {}
     self.saucers = {}
 
-    table.insert(self.saucers, Saucer.new())
 
     self.time = 0
     
@@ -245,6 +251,7 @@ function play:addMissile(ex, ey)
             if self.guns[gun].timer <= 0 then
                 table.insert(self.missiles, Missile.new(self.guns[gun], ex, ey))
                 self.guns[gun]:startCoolDown()
+                
                 break
             end
         end  
@@ -269,7 +276,7 @@ end
 
 function play:update(dt)
 
-    --Dont update if pausede
+    --Dont update if paused
     if self.paused == true then 
         
         mx, my = love.mouse.getPosition()
@@ -348,6 +355,11 @@ function play:update(dt)
         meteor_countdown = meteor_countdown - dt
     end
 
+    if #self.saucers == 0 then
+        table.insert(self.saucers, Saucer.new())
+
+    end
+
     --Missiles
     for i, missile in ipairs(self.missiles) do
         missile:update(dt)
@@ -366,13 +378,28 @@ function play:update(dt)
             end
             --TODO - other destroyables
         end
+
+        for si, saucer in ipairs(self.saucers) do
+            if blast:hasDestroyed(saucer) then
+                --Saucer Destruction
+                table.remove(self.saucers, si)
+            end
+        end
     end
 
     --Updating for Meteors
-    for i, meteor in pairs(self.meteors) do
+    for i, meteor in ipairs(self.meteors) do
         meteor:update(dt)
         if meteor.alive == false then
             table.remove (self.meteors, i)
+        end
+    end
+
+    --Update Saucer
+    for i, saucer in ipairs(self.saucers) do
+        saucer:update(dt)
+        if saucer.alive == false then
+            table.remove (self.saucers, i)
         end
     end
 

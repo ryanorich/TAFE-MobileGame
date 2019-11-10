@@ -12,6 +12,13 @@ function missile.new(source, tx, ty)
     self.targety = ty
     self.alive = true
 
+    self.sound = love.audio.newSource("sfx/missile.wav","static")
+    --Misile sound plays when created
+    if game.states.settings.soundOn  then
+
+        self.sound:play()
+    end
+
     local distance = 0
 
     local totalDistance = math.pow(math.pow((source.x - self.targetx), 2) + 

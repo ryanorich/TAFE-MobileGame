@@ -8,7 +8,11 @@ scoreLimit = 10,
 scores = {},
 theScores = {},
 BGColor = {0,0.2,0,1.0},
-buttons = {}
+textColor = {0.5,0.9,0.4,1.0},
+buttons = {},
+
+font = {}
+
 }
 
 --Deletes all current scores
@@ -126,6 +130,8 @@ function scoreboard:entered()
     local ww = love.graphics.getWidth()
     local wh = love.graphics.getHeight()
 
+    self.font = love.graphics.newFont(wh*0.05)
+
     local buttonWidth = ww * 0.4
     local buttonHeight = wh * 0.1
 
@@ -135,11 +141,14 @@ function scoreboard:entered()
     Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
 
     --Button #1 - BACK TO Menu
-    table.insert(self.buttons, Button.new(
-        "1. Menu",
+
+    button = Button.new(
+        "Menu",
         function () game:changeState("menu") end,
         bx, by, buttonWidth, buttonHeight
-    ))
+    )
+    button:setSound("blipdown")
+    table.insert(self.buttons, button )
 
 
   
@@ -164,6 +173,9 @@ function scoreboard:mousepressed(mx, my, button, istouch)
 
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
+            if game.states.settings.soundOn then
+                button:playPressed()
+            end
             button:fn()
             break
         end
@@ -175,11 +187,26 @@ function scoreboard:draw()
     love.graphics.rectangle('fill',
             0,0,love.graphics.getWidth(), love.graphics.getHeight())
 
-    love.graphics.setColor(1,1,1,1)
-    love.graphics.print("This is the scoreboard menu. There are "..#self.theScores.." scores recored:")
+    -- love.graphics.setColor(1,1,1,1)
+    -- love.graphics.print("This is the scoreboard menu. There are "..#self.theScores.." scores recored:")
+
+    -- for i, score in ipairs(self.theScores) do
+    --     love.graphics.print(i..". \t"..score.score.." - "..score.name, 0, 20*i+20)
+    -- end
+
+    love.graphics.setColor(unpack(self.textColor))
+
+    ww, wh = love.graphics.getDimensions()
+    tx1 = ww*0.1
+    tx2 = ww*0.2
+    tx3 = ww*0.5
+    ty = wh*0.1
+    tspacing = wh*0.7  /10.0
 
     for i, score in ipairs(self.theScores) do
-        love.graphics.print(i..". \t"..score.score.." - "..score.name, 0, 20*i+20)
+        love.graphics.print(i..".", self.font, tx1, ty + tspacing * (i-1))
+        love.graphics.print(score.score, self.font, tx2, ty + tspacing * (i-1))
+        love.graphics.print(score.name, self.font, tx3, ty + tspacing * (i-1))
     end
 
     for i, button in ipairs(self.buttons) do
@@ -198,7 +225,12 @@ function scoreboard:update(dt)
     mx, my = love.mouse.getPosition()
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
-            button.isHot = true
+            if button.isHot == false then
+                button.isHot = true
+                if game.states.settings.soundOn then
+                    button:playHot()
+                end
+            end
         else
             button.isHot = false
         end

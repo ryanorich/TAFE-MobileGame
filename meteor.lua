@@ -8,7 +8,7 @@ function meteor.new(target)
 
     --Private Attributes
     self.size = BASE_SIZE
-    self.fallSpeed = FALL_SPEED
+    self.fallSpeed = FALL_SPEED * love.math.random(0.8,1.1)
     self.target = target
     self.targetx = target.x
     self.targety = target.y
@@ -51,11 +51,16 @@ function meteor.new(target)
             self.x = self.x + (self.target.x - self.x)*ratio
             self.y = self.y + (self.target.y - self.y)*ratio
         else
-            --Reached the targetr
+            --Reached the target - set to not be alive, and play sound
             self.x = target.x 
             self.y = target.y
             self.alive = false
-            self.target.alive = false
+
+            --Only play sound if was alive
+            if self.target.alive == true then
+                self.target.alive = false
+                self.target:playSound()
+            end
         end
         
     end

@@ -1,19 +1,15 @@
 TODO:
-Updated: 03/11/2019
+Updated: 11/11/2019
 
 Required:
 ---------
-Game Sounds
 Game sprites
 Tweaking game values
 
 Wanted:
 -------
-Volume options for Muic and Sound
+Volume options for Music and Sound
 Menu GUI Graphics
-Menu GUI Sounds
-Menu Music
-Saucer Enemies
 Power-Ups - missile speed, gun cool-down
 Rounded corner option for buttons
 

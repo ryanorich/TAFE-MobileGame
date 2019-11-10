@@ -50,11 +50,13 @@ function settings:entered()
     --Button 3 - Menu
     
     local by = wh - buttonHeight * 1.5
-    table.insert(self.buttons, Button.new(
+    button = Button.new(
         "Menu",
         function () game:changeState("menu") end,
         bx, by, buttonWidth, buttonHeight
-    )) 
+    )
+    button:setSound("blipdown")
+    table.insert(self.buttons, button ) 
 
     --Chec the actual settings to set the text
     self:updateButtonText()
@@ -77,7 +79,12 @@ function settings:update(dt)
     mx, my = love.mouse.getPosition()
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
-            button.isHot = true
+            if button.isHot == false then
+                button.isHot = true
+                if game.states.settings.soundOn then
+                    button:playHot()
+                end
+            end
         else
             button.isHot = false
         end
@@ -88,7 +95,11 @@ function settings:mousepressed(mx, my, button, istouch)
 
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
+            if game.states.settings.soundOn then
+                button:playPressed()
+            end
             button.fn(self)
+            
             break
         end
     end
@@ -117,6 +128,12 @@ function settings:updateButtonText()
         self.buttons[2].text = "Music [ ON ]" 
     else
         self.buttons[2].text = "Music [ OFF ]"
+    end
+
+    if self.musicOn then
+        game.states.menu.BGMusic:play()
+    else
+        game.states.menu.BGMusic:pause()
     end
 
 end

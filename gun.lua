@@ -60,6 +60,16 @@ function gun.new(x)
         self.timer = self.coolDown
     end
 
+    self.sound = love.audio.newSource("sfx/building.wav","static")
+
+    function self:playSound()
+        if game.states.settings.soundOn then
+            self.sound:play()
+        end
+    end
+
+    
+
     return self
 end
 

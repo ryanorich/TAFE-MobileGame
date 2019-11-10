@@ -22,6 +22,10 @@ function blast.new(x, y)
     local GROW_SPEED = MAX_SIZE/blast.BLAST_TIME
     local SHRINK_SPEED = MAX_SIZE/blast.SHRINK_TIME
     
+    self.sound = love.audio.newSource("sfx/blast.wav","static")
+    if game.states.settings.soundOn then
+        self.sound:play()
+    end
     
     function self:hasDestroyed(target)
         --Required distance between cencres

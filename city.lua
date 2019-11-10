@@ -16,7 +16,6 @@ function city.new(x)
     self.y = love.graphics.getHeight() - ground
     
     
-
     self.alive = true
 
     function self:draw()
@@ -28,6 +27,14 @@ function city.new(x)
             --Destroyed Cities
             love.graphics.rectangle('line', self.x-width/2, self.y - width/2, width, width)
     
+        end
+    end
+
+    self.sound = love.audio.newSource("sfx/building.wav","static")
+
+    function self:playSound()
+        if game.states.settings.soundOn then
+            self.sound:play()
         end
     end
 

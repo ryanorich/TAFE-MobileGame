@@ -30,22 +30,26 @@ function enterName:entered()
 
 
     --Enter Button
-    table.insert(self.buttons, Button.new(
+    button = Button.new(
         "Enter",
         function () 
             game.states.scoreboard:addScore(tonumber(string.format("%.3f",game.states.play:getTime())), self.name)
             game:changeState("scoreboard")
         end,
         bx, by, buttonWidth, buttonHeight
-    ))
+    )
+    button:setSound("blipup")
+    table.insert(self.buttons, button )
 
     bx = bx + buttonSpacing + buttonWidth
     --Cancel Button
-    table.insert(self.buttons, Button.new(
+    button = Button.new(
         "Cancel",
         function () game:changeState("menu") end,
         bx, by, buttonWidth, buttonHeight
-    ))
+    )
+    button:setSound("blipdown")
+    table.insert(self.buttons, button )
 
 
     --Entering Keys
@@ -189,7 +193,12 @@ function enterName:update(dt)
     mx, my = love.mouse.getPosition()
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
-            button.isHot = true
+            if button.isHot == false then
+                button.isHot = true
+                if game.states.settings.soundOn then
+                    button:playHot()
+                end
+            end
         else
             button.isHot = false
         end
@@ -200,6 +209,9 @@ function enterName:mousepressed(mx, my, button, istouch)
 
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
+            if game.states.settings.soundOn then
+                button:playPressed()
+            end
             --Chcke which type of button
             if #button.text == 1  then
                 --This is a letter button
