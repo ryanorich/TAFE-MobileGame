@@ -31,7 +31,6 @@ function game:linkEvent(event)
 end
 
 --Callback for changing states
-
 function game:changeState(state)
     if      self.states[state] ~= nil then
         if  self.states[self.current_state].exited ~= nil then
@@ -45,7 +44,6 @@ function game:changeState(state)
         end
     end
 end
-
 
 --Creating linking functions
 for i, fun in ipairs(game.functions) do

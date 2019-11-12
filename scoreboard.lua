@@ -1,6 +1,5 @@
 local Button = require("button")
 
-
 local scoreboard = {
 
 ScoreboardFileName = "scores.txt",
@@ -11,8 +10,7 @@ BGColor = {0,0.2,0,1.0},
 textColor = {0.5,0.9,0.4,1.0},
 buttons = {},
 
-font = {}
-
+font = love.graphics.newFont(love.graphics.getHeight()*0.05)
 }
 
 --Deletes all current scores
@@ -78,19 +76,16 @@ end
 function scoreboard:isHighScore(scoreTime)
     --Load the scores, and ensure that they are valid
     if scoreboard:loadScores() == false then 
-        print("No scoreboard error")
         return false 
     end
 
     --If the scoreboard is not filled up, then every score is a highscoree
     if #self.theScores < self.scoreLimit then
-        print("There is room to add score")
         return true
     end
 
     --Otherwise, determine the low score
     local lowScore = nil
-    print("Doing Scores")
     for i, score in ipairs(self.theScores) do
         local s = tonumber(string.match(score.score, "^%d+%.%d+"))
         print ("Match is :"..s)
@@ -111,26 +106,12 @@ function scoreboard:isHighScore(scoreTime)
     end
 end
 
---Adds a new score value to local vaiable
---TODO - Remove this
-function scoreboard:addPlayerScore(score)
-    self.playerScore = score
-end
-
---TODO - Remove this - not used
-function scoreboard:addPlayerName(name)
-    self.playerName = name
-end
-
 --Load scores
 function scoreboard:entered()
     self.buttons = {}
 
-
     local ww = love.graphics.getWidth()
     local wh = love.graphics.getHeight()
-
-    self.font = love.graphics.newFont(wh*0.05)
 
     local buttonWidth = ww * 0.4
     local buttonHeight = wh * 0.1
@@ -138,10 +119,9 @@ function scoreboard:entered()
     local bx = (ww - buttonWidth) * 0.5
     local by = wh - buttonHeight * 1.5
 
-    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
+    Button.setColors( {0.4, 0.5, 0.3, 1.0}, {0.8, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
 
     --Button #1 - BACK TO Menu
-
     button = Button.new(
         "Menu",
         function () game:changeState("menu") end,
@@ -150,12 +130,7 @@ function scoreboard:entered()
     button:setSound("blipdown")
     table.insert(self.buttons, button )
 
-
-  
     self:loadScores()
-    print("Scoreboard Entered")
-
-
 end
 
 function scoreboard:update(dt)
@@ -187,19 +162,12 @@ function scoreboard:draw()
     love.graphics.rectangle('fill',
             0,0,love.graphics.getWidth(), love.graphics.getHeight())
 
-    -- love.graphics.setColor(1,1,1,1)
-    -- love.graphics.print("This is the scoreboard menu. There are "..#self.theScores.." scores recored:")
-
-    -- for i, score in ipairs(self.theScores) do
-    --     love.graphics.print(i..". \t"..score.score.." - "..score.name, 0, 20*i+20)
-    -- end
-
     love.graphics.setColor(unpack(self.textColor))
 
     ww, wh = love.graphics.getDimensions()
-    tx1 = ww*0.1
-    tx2 = ww*0.2
-    tx3 = ww*0.5
+    tx1 = ww*0.05
+    tx2 = ww*0.15
+    tx3 = ww*0.3
     ty = wh*0.1
     tspacing = wh*0.7  /10.0
 
@@ -213,7 +181,6 @@ function scoreboard:draw()
         button:draw()
     end
 end
-
 
 function scoreboard:keypressed(key)
     if  key == "escape" then

@@ -1,15 +1,10 @@
 local button = {
-
  COLOR = {073, 0.4, 0.3, 1.0},
  COLOR_HOT = {0.7, 0.9, 0.5, 1.0},
  COLOR_TEXT = {0.7,0,0,1.0} ,
- FONT = nil,
- 
+ FONT = love.graphics.newFont(love.graphics.getHeight()*0.05),
 }
 
-button.FONT = love.graphics.newFont(love.graphics.getHeight()*0.05)
-
---print("Font is ".. button.FONT)
 function button.setColors(color, colorHot, colorText)
     button.COLOR = color
     button.COLOR_HOT = colorHot
@@ -52,29 +47,21 @@ function button.new(text, fn, x, y, width, height)
         else
             return false
         end
-        print( self.text)
     end
 
-    
     function self:draw()
         if self.isHot == true then
             love.graphics.setColor(colorHot)
         else
             love.graphics.setColor(color)
         end
-
         love.graphics.rectangle("fill", self.x, self.y, width, height)
-
         love.graphics.setColor(colorText)
-
         love.graphics.print(self.text, self.font, tx, ty)
-        
-
     end
     
     function self:changeText(newText)
         self.text = newText
-        print("Changing Text ".. self.text)
     end
 
     function self:playPressed()
@@ -89,7 +76,6 @@ function button.new(text, fn, x, y, width, height)
         if sound == "blip" then
             self.sound.press = love.audio.newSource("sfx/blip.wav", "static")
         elseif sound == "blipup" then
-            print("Setting Sound")
             self.sound.press = love.audio.newSource("sfx/blipup.wav", "static")
         elseif sound == "blipdown" then
             self.sound.press = love.audio.newSource("sfx/blipdown.wav", "static")

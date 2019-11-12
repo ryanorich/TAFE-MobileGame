@@ -4,10 +4,9 @@ local enterName = {
     BGColor = {0,0.2,0,1.0},
     textColor = {0.5,0.9,0.4, 1.0},
     name = "",
-    MAX_LENGTH = 30,
+    MAX_LENGTH = 20,
     buttons = {},
     font = {}
-
 }
 
 function enterName:entered()
@@ -26,8 +25,7 @@ function enterName:entered()
     local bx = (ww - buttonWidth*2 - buttonSpacing) * 0.5
     local by = 0.9 * wh - buttonHeight
 
-    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
-
+    Button.setColors( {0.4, 0.5, 0.3, 1.0}, {0.8, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
 
     --Enter Button
     button = Button.new(
@@ -51,9 +49,7 @@ function enterName:entered()
     button:setSound("blipdown")
     table.insert(self.buttons, button )
 
-
-    --Entering Keys
-
+    --Keys
     buttonWidth = ww/10.0*0.8
     buttonSpacing = ww/10.0*0.2
 
@@ -112,7 +108,6 @@ function enterName:entered()
          enterName.removeLetter,
          bx + buttonWidth*0.8, by, buttonWidth*0.2, buttonHeight
      ))
-
 end
 
 --Operate on each key that is pressed
@@ -127,18 +122,16 @@ function enterName:keypressed(key)
         if string.len(self.name) > 0  and string.len(self.name) < self.MAX_LENGTH then
             self.name = self.name.." "
         end
-    elseif key == "delete" then
+    elseif key == "delete" or key == "backspace" then
         self.name = string.sub(self.name, 1, -2)
     
     else 
         self:addLetter(key)
     end
-
 end
 
 function enterName:addLetter(letter)
-
-    if string.len(letter) == 1  and string.find(letter, "%w") ~= nill then
+    if string.len(letter) == 1  and string.find(letter, "%a") ~= nill then
         --adding letter. 
         if string.len(self.name) < self.MAX_LENGTH then
             self.name = self.name..string.upper(letter)
@@ -153,13 +146,9 @@ end
 
 function enterName:removeLetter()
     if #self.name > 0 then
-
         self.name = string.sub(self.name, 1, -2)
     end
-
 end
-
-
 
 function enterName:draw()
 
@@ -185,8 +174,6 @@ function enterName:draw()
     local ty = ty * 3
 
     love.graphics.print(self.name, self.font, tx, ty)
-
-
 end
 
 function enterName:update(dt)
@@ -206,7 +193,6 @@ function enterName:update(dt)
 end
 
 function enterName:mousepressed(mx, my, button, istouch)
-
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
             if game.states.settings.soundOn then
@@ -225,7 +211,6 @@ function enterName:mousepressed(mx, my, button, istouch)
                 button.fn(self)
                 break
             end
-           
         end
     end
 end

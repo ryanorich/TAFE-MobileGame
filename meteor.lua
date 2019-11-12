@@ -42,7 +42,6 @@ function meteor.new(target)
         --Travel for Start to Target
         local distance = dt*self.fallSpeed
         local distanceToGo = math.pow((math.pow((self.x - self.target.x),2)
-
                                 +math.pow((self.y - self.target.y),2)), 0.5)
 
         if distance < distanceToGo then
@@ -62,7 +61,6 @@ function meteor.new(target)
                 self.target:playSound()
             end
         end
-        
     end
 
     function self:draw()
@@ -71,7 +69,6 @@ function meteor.new(target)
         love.graphics.setColor(0.9,0.4,0.2,1)
         love.graphics.circle("fill", self.x,  self.y, self.size/2)
     end
-
 
     return self
 end

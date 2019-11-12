@@ -19,18 +19,21 @@ local play =
 
     time = 0,
 
-    PLAYER_SPEED = 500,
-    GROUND_HEIGHT = 20,
+    GROUND_HEIGHT = 32,
     GUN_X_OFFSET = 50,
     GUN_CITY_SPACING = 0, --Need to calculate
-    CITY_SIZE = 50,
-
+ 
     paused = false,
-
     pauseButtons = {},
 
-    sound = {
-        --missile = love.audio.newSource("sfx/missile.wav", "static")
+    font = love.graphics.newFont(love.graphics.getWidth()*0.025),
+    textColor = {0.5,0.9,0.4,1.0},
+    
+    sprites = {
+        city = love.graphics.newQuad(0,0,64,64,128,128),
+        cityDead = love.graphics.newQuad(64,0,64,64,128,128),
+        gun = love.graphics.newQuad(0,64,64,64,128,128),
+        gunDead = love.graphics.newQuad(64,64,64,64,128,128),
     },
 }
 
@@ -45,8 +48,12 @@ end
 
 --Startup
 function play:entered()
+    
     self.paused = false
     self.pauseButtons = {}
+
+    --Create Global spritesheet object
+    spriteSheet = love.graphics.newImage("gfx/sprites.png")
 
     --Stop the music from playing
     game.states.menu.BGMusic:stop()
@@ -54,17 +61,15 @@ function play:entered()
     local ww, wh = love.graphics.getDimensions()
 
     local noOfButtons = 2
-
     local buttonWidth = ww * 0.4
     local buttonHeight = wh * 0.1
     local buttonSpacing = buttonHeight * 0.4
     local totalButtonHeight = noOfButtons * (buttonHeight + buttonSpacing) - buttonSpacing
-
     local bx = (ww - buttonWidth) * 0.5
     local by = (wh - totalButtonHeight) * 0.5
 
     --Button 1 - Continue
-    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
+    Button.setColors( {0.4, 0.5, 0.3, 1.0}, {0.8, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
      
      table.insert(self.pauseButtons, Button.new(
         "Continue",
@@ -76,7 +81,6 @@ function play:entered()
 
      by = by + buttonHeight + buttonSpacing
    
-     
      table.insert(self.pauseButtons, Button.new(
         "Menu",
         function () game:changeState("menu") end,
@@ -90,18 +94,14 @@ function play:entered()
     self.meteors = {}
     self.missiles = {}
     self.saucers = {}
-
-
     self.time = 0
     
      --Load Shader
     skyshader = love.graphics.newShader("skyshader.fs")
     skyshader:send("height", love.graphics.getHeight())
 
-    blurshader = love.graphics.newShader("blurshader.fs")
-
     --Add   guns and cities
-    self.GUN_CITY_SPACING = (love.graphics.getWidth() - 2*self.GUN_X_OFFSET)/6.0
+    self.GUN_CITY_SPACING = (ww - 2*self.GUN_X_OFFSET)/6.0
 
     for pos=0,6 do
         --Guns at position 0, 3, 6
@@ -122,10 +122,7 @@ function play:entered()
     meteor_countdown = 0
 end
 
-
---Note - User method calls for other states.
 function play:exited()
-    
 end
 
 function play:draw()
@@ -133,25 +130,17 @@ function play:draw()
    
     --Draw Shader Background
     love.graphics.setShader(skyshader)
-    love.graphics.rectangle('fill', 0,0,love.graphics.getWidth(), love.graphics.getHeight())
-
+    love.graphics.rectangle('fill', 0,0,ww, wh)
     love.graphics.setShader()
-    -- if self.paused == true then
-    --     love.graphics.setShader(blurshader)
-    -- else
-    --     love.graphics.setShader()
-    -- end
-
 
     --Draw Background
-    love.graphics.setColor(0.2,1,0,1)
-    love.graphics.rectangle('fill',0,love.graphics.getHeight()-self.GROUND_HEIGHT, love.graphics.getWidth(), self.GROUND_HEIGHT)
+    love.graphics.setColor(0.1,0.5,0.1,1)
+    love.graphics.rectangle('fill',0,wh-self.GROUND_HEIGHT, ww, self.GROUND_HEIGHT)
 
     local NoGuns = 0
     for i, gun in ipairs(self.guns) do
         if gun.alive == true then 
             NoGuns = NoGuns + 1
-            
         end
     end
 
@@ -159,43 +148,25 @@ function play:draw()
     for i, city in ipairs(self.cities) do
         if city.alive == true then
             NoCities = NoCities + 1
-           
         end
     end
 
-    --Draw Reticle
-    love.graphics.setColor(1,1,1,1)
-    love.graphics.print("This is the game, pres [ESC] to exit to menu.")
-    love.graphics.print("Time is now : ".. self.time, 0, 20)
-    love.graphics.print("Meteors : ".. #self.meteors, 0, 40)
-    love.graphics.print("Missiles : ".. #self.missiles, 0, 60)
-    love.graphics.print("Blasts : ".. #self.blasts, 0, 80)
-    love.graphics.print("Guns : ".. NoGuns, 0, 100)
-    love.graphics.print("Cities : ".. NoCities, 0, 120)
-    love.graphics.print("FP : ".. love.timer.getFPS(), 0, 140)
-    
-
-     --Draw Guns
-
+    --Draw Guns
     for i, gun in pairs(self.guns) do
         gun:draw()
     end
 
     --Draw Cities
-
-
     for i, city in ipairs(self.cities) do
         city:draw()
     end
 
     --Draw Missiles
-
     for mi, missile in ipairs(self.missiles) do
         missile:draw()
     end
 
     --Draw Blasts
-
     for i, blast in ipairs(self.blasts) do
         blast:draw()
     end
@@ -206,13 +177,15 @@ function play:draw()
     end
 
     --Draw Saucers
-
     for i, saucer in ipairs(self.saucers) do
         saucer:draw()
     end
 
+    love.graphics.setColor(unpack(self.textColor))
+    love.graphics.print(string.format("%.3f", self.time), self.font, wh*0.02, wh*0.02)
 
-    --love.graphics.setShader()
+    love.graphics.setColor(1,1,1,1)
+
     --Draw Pause Menu
     if self.paused == true then
         
@@ -234,11 +207,9 @@ function play:mousepressed(x, y, button, istouch)
             end
         end
     else
-
         if button == 1 then
             play:addMissile(x,y)
         end
-
     end
 end
 
@@ -251,34 +222,24 @@ function play:addMissile(ex, ey)
             if self.guns[gun].timer <= 0 then
                 table.insert(self.missiles, Missile.new(self.guns[gun], ex, ey))
                 self.guns[gun]:startCoolDown()
-                
                 break
             end
         end  
     end
-
-   -- Blast.BASE_SIZE = Blast.BASE_SIZE * 1.5
-    --Blast.sizeIncrease(1.2)
-
 end
 
 function play:keypressed(key)
     if key == "escape" then
         self.paused = not self.paused
-        --game:changeState ( "menu" )
     end
     if key == "." then
-        game.states.scoreboard:addPlayerScore(self.time)
         game:changeState ( "gameOver" )
     end
-    
 end
 
 function play:update(dt)
-
     --Dont update if paused
     if self.paused == true then 
-        
         mx, my = love.mouse.getPosition()
         for i, button in ipairs(self.pauseButtons) do
             if button:isInside(mx, my) then
@@ -287,9 +248,7 @@ function play:update(dt)
                 button.isHot = false
             end
         end
-        
         return 
-    
     end
 
     --Check if all guns and cities are destroyed
@@ -316,11 +275,6 @@ function play:update(dt)
     
         --send time to shader
         skyshader:send("time", self.time)
-    
-    window_width, window_height = love.graphics.getDimensions()
-
-
- 
 
     --Blasts
     for i, blast in ipairs(self.blasts) do
@@ -332,7 +286,6 @@ function play:update(dt)
 
     --Add Meteors
     if meteor_countdown <= 0 then
-    
         if #self.meteors < 50 then
             --Get Random structure index, form 0 to 6
             local pos = math.random(0, 6)
@@ -357,7 +310,6 @@ function play:update(dt)
 
     if #self.saucers == 0 then
         table.insert(self.saucers, Saucer.new())
-
     end
 
     --Missiles
@@ -376,12 +328,15 @@ function play:update(dt)
                 --Meteor descruction
                 table.remove(self.meteors, mi)
             end
-            --TODO - other destroyables
         end
 
         for si, saucer in ipairs(self.saucers) do
             if blast:hasDestroyed(saucer) then
                 --Saucer Destruction
+                --Create new large blast
+                blast = Blast.new(saucer.x, saucer.y)
+                blast.MAX_SIZE = blast.MAX_SIZE*2.5
+                table.insert(self.blasts, blast)
                 table.remove(self.saucers, si)
             end
         end
@@ -449,6 +404,3 @@ function getGunOrder (x)
 end
 
 return play
-
---Local table for play
---when using as require, creates an encapuslted version

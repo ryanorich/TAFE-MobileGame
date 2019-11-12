@@ -1,52 +1,59 @@
-local gun = {}
+local gun = {
+    scale = 1,
+}
 
-local GROUND = 50
-local WIDTH = 50
-local GUN_HEIGHT = 80
+local GROUND = 32
+local WIDTH = 64
+local GUN_HEIGHT = 56
+
 local GUN_COOLDOWN  = 1.2
 
 local CD_WIDTH = 40
 local CD_HEIGHT = 10
+local CD_OFFSET = 16
 
 function gun.new(x)
     local self = {}
 
-    local gunHeight = GUN_HEIGHT
-    local width = WIDTH
-    local gound = GROUND
+    local scale = gun.scale
+    local gunHeight = GUN_HEIGHT * scale
+    local width = WIDTH * scale
+    local ground = GROUND * scale
 
     self.x = x
-    self.y = love.graphics.getHeight()-GROUND
+    self.y = love.graphics.getHeight()-ground
     self.guny = love.graphics.getHeight() - gunHeight
     self.coolDown = GUN_COOLDOWN
     self.timer = 0
 
     self.alive = true
 
-    local CDX = self.x - CD_WIDTH/2
-    local CDY = self.y - CD_HEIGHT/2
+    local CDWidth = CD_WIDTH * scale
+    local CDHeight = CD_HEIGHT * scale
+    local CDOffset = CD_OFFSET * scale
+    local CDX = self.x - CDWidth/2
+    local CDY = self.y + CD_OFFSET - CDHeight/2
    
+    local sprites = {
+        gun = love.graphics.newQuad(0,64,64,64,128,128),
+        gunDead = love.graphics.newQuad(64,64,64,64,128,128)
+    }
 
     function self:draw()
         
-
         if self.alive == true then
-            love.graphics.setColor(0.3,0.3,0.4,1)
-            love.graphics.circle('fill', self.x, self.guny +width/2 , width*0.4)
-            love.graphics.rectangle('fill', self.x-width/2, self.y, width, width)
-
+            
+            love.graphics.setColor(1,1,1,1)
+            love.graphics.draw(spriteSheet, sprites["gun"], self.x-width/2, self.y - width/2, 0, gun.scale, gun.scale)
             love.graphics.setColor(0.1,0.3,0.1,1)
-            love.graphics.rectangle('fill', CDX, CDY, CD_WIDTH, CD_HEIGHT)
-
+            love.graphics.rectangle('fill', CDX, CDY, CDWidth, CDHeight)
             if self.timer > 0 then
-
                 love.graphics.setColor(0.9,0.2,0.2,1)
-                love.graphics.rectangle('fill', CDX, CDY, CD_WIDTH * self.timer/self.coolDown, CD_HEIGHT)
+                love.graphics.rectangle('fill', CDX, CDY, CDWidth * self.timer/self.coolDown, CDHeight)
             end
         else
-            love.graphics.setColor(0.3,0.3,0.4,1)
-            love.graphics.circle('line', self.x, self.guny +width/2 , width*0.4)
-            love.graphics.rectangle('line', self.x-width/2, self.y, width, width)
+            love.graphics.setColor(1,1,1,1)
+            love.graphics.draw(spriteSheet, sprites["gunDead"], self.x-width/2, self.y - width/2, 0, gun.scale, gun.scale)
         end
     end
 
@@ -67,8 +74,6 @@ function gun.new(x)
             self.sound:play()
         end
     end
-
-    
 
     return self
 end

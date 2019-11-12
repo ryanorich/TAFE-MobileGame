@@ -6,7 +6,7 @@ function missile.new(source, tx, ty)
 
     self.source = source
     self.x = source.x
-    self.y = source.y
+    self.y = source.guny
     
     self.targetx = tx
     self.targety = ty
@@ -26,7 +26,6 @@ function missile.new(source, tx, ty)
 
     self.speed = BASE_SPEED
 
-
     function self:update(dt)
         
         distance = distance + self.speed*dt
@@ -38,14 +37,13 @@ function missile.new(source, tx, ty)
         else
             local distanceRatio  = distance / totalDistance
             self.x = self.source.x + (self.targetx - self.source.x)*distanceRatio
-            self.y = self.source.y + (self.targety - self.source.y)*distanceRatio
+            self.y = self.source.guny + (self.targety - self.source.y)*distanceRatio
         end
     end
     
-
     function self:draw()
         love.graphics.setColor(0.5,1.0,0.2,1.0)
-        love.graphics.line(self.source.x, self.source.y, self.x, self.y)
+        love.graphics.line(self.source.x, self.source.guny, self.x, self.y)
         love.graphics.circle('fill', self.x, self.y, 5)
     end
 

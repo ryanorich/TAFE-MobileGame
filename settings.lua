@@ -32,7 +32,7 @@ function settings:entered()
     local by = (wh - totalButtonHeight) * 0.5
 
     --Button 1 - SFX
-    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
+    Button.setColors( {0.4, 0.5, 0.3, 1.0}, {0.8, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
      
      table.insert(self.buttons, Button.new(
         "Sound [ ... ]",
@@ -69,7 +69,6 @@ function settings:draw()
     love.graphics.setColor(unpack(self.BGColor))
     love.graphics.rectangle('fill', 0, 0,ww, wh)
 
-
     for i, button in ipairs(self.buttons) do
         button:draw()
     end
@@ -95,11 +94,10 @@ function settings:mousepressed(mx, my, button, istouch)
 
     for i, button in ipairs(self.buttons) do
         if button:isInside(mx, my) then
+            button.fn(self)
             if game.states.settings.soundOn then
                 button:playPressed()
             end
-            button.fn(self)
-            
             break
         end
     end
@@ -108,8 +106,6 @@ end
 function settings:toggleSound()
     self.soundOn = not self.soundOn
     self:updateButtonText()
-
-
 end
 
 function settings:toggleMusic()

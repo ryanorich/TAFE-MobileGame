@@ -1,8 +1,8 @@
 local blast = {
 
 BASE_SIZE = 100,
-BLAST_TIME = 0.5,
-SHRINK_TIME = 0.3
+BLAST_TIME = 0.4,
+SHRINK_TIME = 0.5
 }
 
 function blast.sizeIncrease(increase)
@@ -18,9 +18,9 @@ function blast.new(x, y)
     local growing = true
     self.alive = true
 
-    local MAX_SIZE = blast.BASE_SIZE
-    local GROW_SPEED = MAX_SIZE/blast.BLAST_TIME
-    local SHRINK_SPEED = MAX_SIZE/blast.SHRINK_TIME
+    self.MAX_SIZE = blast.BASE_SIZE
+    local GROW_SPEED = self.MAX_SIZE/blast.BLAST_TIME
+    local SHRINK_SPEED = self.MAX_SIZE/blast.SHRINK_TIME
     
     self.sound = love.audio.newSource("sfx/blast.wav","static")
     if game.states.settings.soundOn then
@@ -53,12 +53,11 @@ function blast.new(x, y)
 
     end
 
-
     --Updat the blast size, and state form growing to shrinking.
     function self:update(dt)
         if growing then
             size = size + GROW_SPEED * dt
-            if size >= MAX_SIZE then
+            if size >= self.MAX_SIZE then
                 growing = false
             end
         else
@@ -75,11 +74,7 @@ function blast.new(x, y)
         love.graphics.circle("fill", self.x, self.y, size/2)
     end
 
-
-
     return self
 end
-
-
 
 return blast

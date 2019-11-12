@@ -4,8 +4,9 @@ local menu = {
     message = "",
     buttons = {},
     BGColor = {0,0.2,0,1.0},
-    BGMusic = love.audio.newSource("sfx/BGMusic.mp3","static")
- 
+    textColor = {0.5,0.9,0.4,1.0},
+    BGMusic = love.audio.newSource("sfx/BGMusic.mp3","static"),
+    titleFont = love.graphics.newFont(love.graphics.getHeight()*0.1),
 }
 
 menu.BGMusic:setLooping(true)
@@ -51,7 +52,7 @@ function menu:entered()
     local bx = (ww - buttonWidth) * 0.5
     local by = (wh - totalButtonHeight) * 0.5
 
-    Button.setColors( {0.3, 0.4, 0.3, 1.0}, {0.7, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
+    Button.setColors( {0.4, 0.5, 0.3, 1.0}, {0.8, 0.9, 0.5, 1.0}, {0,0.2,0,1.0} )
 
     --Button #1 - Play
     button = Button.new(
@@ -92,7 +93,7 @@ function menu:entered()
     table.insert(self.buttons, button)
 
     --Exit Button
-    Button.setColors({0.2,0,0,1},{0.9,0.3,0.21},{1.0,0.1,0.0,1})
+    Button.setColors({0.2,0,0,1},{0.4,0.3,0.2,1},{1.0,0.1,0.0,1})
  
     local by = wh - buttonHeight * 1.5
     button = Button.new(
@@ -132,6 +133,13 @@ function menu:draw()
         button:draw()
     end
 
+    love.graphics.setColor(unpack(self.textColor))
+    local title = "METEOR CONTROL"
+    local tw = self.titleFont.getWidth(self.titleFont, title)
+    local tx = (ww - tw) * 0.5
+    local ty = wh * 0.05
+
+    love.graphics.print(title,  self.titleFont,tx, ty)
 end
 
 function menu:set_message(message)
@@ -139,7 +147,6 @@ function menu:set_message(message)
 end
 
 function menu:keypressed(key)
-
     if key == "escape" then
         menu.exitGame()
     end
