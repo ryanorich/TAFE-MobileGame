@@ -5,7 +5,7 @@ local menu = {
     buttons = {},
     BGColor = {0,0.2,0,1.0},
     textColor = {0.5,0.9,0.4,1.0},
-    BGMusic = love.audio.newSource("sfx/BGMusic.mp3","static"),
+    BGMusic = love.audio.newSource("sfx/bgmusic.mp3","static"),
     titleFont = love.graphics.newFont(love.graphics.getHeight()*0.1),
 }
 
@@ -31,7 +31,7 @@ function menu:entered()
         self.BGMusic:pause()
     end
 
-    self.blip = love.audio.newSource("sfx/Blip.wav", "static")
+    self.blip = love.audio.newSource("sfx/blip.wav", "static")
     print (self.blip)
     
     --Setting up main menu button - 4 of 

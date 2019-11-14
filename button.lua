@@ -79,8 +79,6 @@ function button.new(text, fn, x, y, width, height)
             self.sound.press = love.audio.newSource("sfx/blipup.wav", "static")
         elseif sound == "blipdown" then
             self.sound.press = love.audio.newSource("sfx/blipdown.wav", "static")
-        elseif sound == "klack" then
-            self.sound.press = love.audio.newSource("sfx/blip.wav", "static")
         else
             self.sound.press = love.audio.newSource("sfx/blip.wav", "static")
         end
